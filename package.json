@@ -6,7 +6,8 @@
   "scripts": {
     "test": "karma start",
     "start_universal": "node dist/app/main-server.js",
-    "postinstall": "typings install; cp temporary-render.d.ts node_modules/angular2-universal-preview/dist/server/src/render.d.ts"
+    "postinstall": "typings install; cp temporary-render.d.ts node_modules/angular2-universal-preview/dist/server/src/render.d.ts",
+    "perf": "webdriver-manager update && protractor protractor-perf.js"
   },
   "author": "",
   "license": "MIT",
@@ -26,6 +27,7 @@
     "zone.js": "^0.5.11"
   },
   "devDependencies": {
+    "benchpress": "^2.0.0-beta.5",
     "es6-module-loader": "0.17.10",
     "gulp": "^3.9.0",
     "gulp-inline": "^0.1.0",
@@ -33,6 +35,8 @@
     "gulp-sass": "^2.1.1",
     "gulp-typescript": "^2.10.0",
     "gulp-util": "^3.0.7",
+    "http-proxy": "^0.2.3",
+    "http-server": "^0.8.5",
     "jasmine-core": "^2.3.4",
     "karma": "^0.13.15",
     "karma-chrome-launcher": "^0.2.1",
