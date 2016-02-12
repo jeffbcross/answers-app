@@ -1,4 +1,5 @@
 var httpServer = require('http-server');
+require('typescript-require');
 
 exports.config = {
   directConnect: true,
@@ -24,11 +25,11 @@ exports.config = {
 
   beforeLaunch: function () {
     require('./dist/app/main-server');
-    require('./test/proxy-server');
+    require('./test/proxy-server.ts');
     httpServer.createServer({
       showDir: false,
       root: 'dist'
-    }).listen('8080', 'localhost');
+    }).listen('9000', 'localhost');
   },
   onPrepare: function() {
     // open a new browser for every benchmark
