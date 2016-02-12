@@ -8,7 +8,7 @@ import {ROUTER_DIRECTIVES} from 'angular2/router';
 		<img role="tab" class="header__menu js-toggle-menu" src="/images/ic_menu_24px.svg" alt="toggle_nav" (click)="openSideNav()"/>
 
 		<a class="header__title" [routerLink]="['Questions']">Angular Answers</a>
-    <a class="header__item" [routerLink]="['CreateQuestion']">New Question</a>
+    <a class="header__item new-question" [routerLink]="['CreateQuestion']">New Question</a>
 	`,
   directives: [ROUTER_DIRECTIVES]
 })
