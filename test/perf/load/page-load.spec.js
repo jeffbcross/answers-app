@@ -16,36 +16,46 @@ const SAMPLE_SIZE = 5;
 
 describe('home page load', function() {
   ['2G', '3G', '4G'].forEach((speed, i) => {
-    it(`should be fast with universal on ${speed} connection`, function(done) {
-      var validator = new benchpress.RegressionSlopeValidator(SAMPLE_SIZE, 'loadTime');
-      var samples = [];
-      var finalSample;
+    [{
+      server: 'universal',
+      portPrefix: '800',
+      path: ''
+    },{
+      server: 'http-server',
+      portPrefix: '808',
+      path: 'index.ng2.html'
+    }].forEach((config) => {
+      it(`should be fast with ${config.server} on ${speed} connection`, function(done) {
+        var validator = new benchpress.RegressionSlopeValidator(SAMPLE_SIZE, 'loadTime');
+        var samples = [];
+        var finalSample;
 
-      function loadPage() {
-        var startTime = process.hrtime();
-        browser.get(`http://localhost:800${i}`);
-        browser.wait($('.new-question').getText().then(() => {
-          var totalTime = process.hrtime(startTime);
-          samples.push({
-            values: {
-              loadTime: parseFloat(totalTime.join('.'))
+        function loadPage() {
+          var startTime = process.hrtime();
+          browser.get(`http://localhost:${config.portPrefix}${i}/${config.path}`);
+          browser.wait($('.new-question').getText().then(() => {
+            var totalTime = process.hrtime(startTime);
+            samples.push({
+              values: {
+                loadTime: parseFloat(totalTime.join('.'))
+              }
+            });
+            if (finalSample = validator.validate(samples)) {
+              writeReport(
+                  `LOAD TIMES FOR ${speed} ON ${config.server.toUpperCase()}`,
+                  finalSample.map(v => v.values.loadTime),
+                  'MEAN ' + finalSample
+                    .map(v => v.values.loadTime)
+                    .reduce((prev, current, i) => prev + current, 0) / SAMPLE_SIZE
+                  );
+              done();
+            } else {
+              loadPage();
             }
-          });
-          if (finalSample = validator.validate(samples)) {
-            writeReport(
-                `LOAD TIMES FOR ${speed}`,
-                finalSample.map(v => v.values.loadTime),
-                'MEAN ' + finalSample
-                  .map(v => v.values.loadTime)
-                  .reduce((prev, current, i) => prev + current, 0) / SAMPLE_SIZE
-                );
-            done();
-          } else {
-            loadPage();
-          }
-        }));
-      }
-      loadPage();
+          }));
+        }
+        loadPage();
+      });
     });
   });
 
@@ -68,11 +78,11 @@ describe('home page load', function() {
 
 function writeReport (heading, rows, footer) {
   console.log('');
-  console.log('|-------------------')
+  console.log('|----------------------------------')
   console.log(`|- ${heading}`);
-  console.log('|-------------------');
+  console.log('|----------------------------------');
   rows.forEach((v) => console.log('|-', v));
   console.log(`|- ${footer}`);
-  console.log('|-------------------');
+  console.log('|----------------------------------');
   console.log('');
 }
