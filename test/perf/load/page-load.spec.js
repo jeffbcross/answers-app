@@ -12,7 +12,11 @@ var runner = new benchpress.Runner([
   benchpress.bind(benchpress.Options.FORCE_GC).toValue(true)
 ]);
 
-const SAMPLE_SIZE = 5;
+const SAMPLE_SIZE = 20;
+const REPORT_LINE = '|----------------------------------';
+const JASMINE_TIMEOUT = 60 * 1000;
+
+var validator = new benchpress.RegressionSlopeValidator(SAMPLE_SIZE, 'loadTime');
 
 describe('home page load', function() {
   ['2G', '3G', '4G'].forEach((speed, i) => {
@@ -26,7 +30,7 @@ describe('home page load', function() {
       path: 'index.ng2.html'
     }].forEach((config) => {
       it(`should be fast with ${config.server} on ${speed} connection`, function(done) {
-        var validator = new benchpress.RegressionSlopeValidator(SAMPLE_SIZE, 'loadTime');
+        writeTestStart(`TESTING ${config.server.toUpperCase()} on ${speed}`);
         var samples = [];
         var finalSample;
 
@@ -41,12 +45,14 @@ describe('home page load', function() {
               }
             });
             if (finalSample = validator.validate(samples)) {
+              var mean = finalSample
+                    .map(v => v.values.loadTime)
+                    .reduce((prev, current, i) => prev + current, 0) / SAMPLE_SIZE;
+              var stddev = calculateCoefficientOfVariation(finalSample.map(v => v.values.loadTime), mean);
               writeReport(
                   `LOAD TIMES FOR ${speed} ON ${config.server.toUpperCase()}`,
                   finalSample.map(v => v.values.loadTime),
-                  'MEAN ' + finalSample
-                    .map(v => v.values.loadTime)
-                    .reduce((prev, current, i) => prev + current, 0) / SAMPLE_SIZE
+                  `MEAN ${mean} ± ${stddev}%`
                   );
               done();
             } else {
@@ -55,34 +61,46 @@ describe('home page load', function() {
           }));
         }
         loadPage();
-      });
+      }, JASMINE_TIMEOUT);
     });
-  });
-
-
-  xit('should be fast with http-server', function(done) {
-    runner.sample({
-      id: 'home-page-load-http-server',
-      execute: function() {
-        browser.get('http://localhost:8080/index.ng2.html');
-        browser.wait($('.new-question').getText());
-      },
-      bindings: [
-        benchpress.bind(benchpress.Options.SAMPLE_DESCRIPTION).toValue({
-          server: 'http-server'
-        })
-      ]
-    }).then(done, done.fail);
   });
 });
 
+function writeTestStart (heading) {
+  console.log('');
+  console.log(REPORT_LINE);
+  console.log(`|- ${heading}`)
+  console.log(REPORT_LINE);
+  console.log('');
+}
+
 function writeReport (heading, rows, footer) {
   console.log('');
-  console.log('|----------------------------------')
+  console.log(REPORT_LINE)
   console.log(`|- ${heading}`);
-  console.log('|----------------------------------');
+  console.log(REPORT_LINE);
   rows.forEach((v) => console.log('|-', v));
   console.log(`|- ${footer}`);
-  console.log('|----------------------------------');
+  console.log(REPORT_LINE);
   console.log('');
+}
+
+function calculateCoefficientOfVariation(sample, mean) {
+  return calculateStandardDeviation(sample, mean) / mean * 100;
+}
+
+function calculateMean(samples) {
+  var total = 0;
+  // TODO: use reduce
+  samples.forEach(x => total += x);
+  return total / samples.length;
+}
+
+function calculateStandardDeviation(samples, mean) {
+  var deviation = 0;
+  // TODO: use reduce
+  samples.forEach(x => deviation += Math.pow(x - mean, 2));
+  deviation = deviation / (samples.length);
+  deviation = Math.sqrt(deviation);
+  return deviation;
 }
