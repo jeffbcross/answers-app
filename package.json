@@ -6,7 +6,8 @@
   "scripts": {
     "test": "karma start",
     "start_universal": "node dist/app/main-server.js",
-    "postinstall": "typings install; cp temporary-render.d.ts node_modules/angular2-universal-preview/dist/server/src/render.d.ts"
+    "postinstall": "typings install; cp temporary-render.d.ts node_modules/angular2-universal-preview/dist/server/src/render.d.ts",
+    "compile_security_rules": "firebase-bolt < security-rules.bolt > security-rules.json"
   },
   "author": "",
   "license": "MIT",

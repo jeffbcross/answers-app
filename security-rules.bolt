@@ -1,0 +1,21 @@
+path / {
+  read() {true}
+  write() {false}
+}
+
+type Question {
+  author: String;
+  title: String;
+  text: String;
+  validate() {this.author == auth.uid}
+}
+
+path /questions {
+  read() {true}
+}
+
+path /questions/{$id} is Question {
+  write() {(auth != null && prior(this) != null) || isLoggedInUser(prior(this).child.author)}
+}
+
+isLoggedInUser(uid) {auth !== null && uid == auth.uid}
