@@ -25,11 +25,13 @@ app.use(express.static(root));
 
 // Routes
 app.use('/', (req, res) => {
+  let baseUrl = `http://localhost:3000${req.baseUrl}`;
+  let url = req.originalUrl.replace(baseUrl, '') || '/';
   res.render('index', { App, providers: [
+    provide(REQUEST_URL, {useValue: url}),
     ROUTER_PROVIDERS,
     SERVER_LOCATION_PROVIDERS,
-    provide(APP_BASE_HREF, {useValue: `http://localhost:3000${req.baseUrl}`}),
-    provide(REQUEST_URL, {useValue: 'http://localhost:3000'}),
+    provide(APP_BASE_HREF, {useValue: baseUrl}),
     SHARED_PROVIDERS
   ] });
 });
