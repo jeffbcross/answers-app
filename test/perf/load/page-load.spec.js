@@ -9,6 +9,10 @@ var runner = new benchpress.Runner([
   benchpress.bind(benchpress.RegressionSlopeValidator.SAMPLE_SIZE).toValue(50),
   //use the script metric to calculate slope regression
   benchpress.bind(benchpress.RegressionSlopeValidator.METRIC).toValue('scriptTime'),
+  benchpress.MultiMetric.createBindings([benchpress.UserMetric]),
+  benchpress.UserMetric.createBindings({
+    loadTime: 'The time in milliseconds to bootstrap'
+  }),
   benchpress.bind(benchpress.Options.FORCE_GC).toValue(true)
 ]);
 
@@ -34,33 +38,40 @@ describe('home page load', function() {
         var samples = [];
         var finalSample;
 
-        function loadPage() {
-          var startTime = process.hrtime();
-          browser.get(`http://localhost:${config.portPrefix}${i}/${config.path}`);
-          browser.wait($('.new-question').getText().then(() => {
-            var totalTime = process.hrtime(startTime);
-            samples.push({
-              values: {
-                loadTime: parseFloat(totalTime.join('.'))
-              }
-            });
-            if (finalSample = validator.validate(samples)) {
-              var mean = finalSample
-                    .map(v => v.values.loadTime)
-                    .reduce((prev, current, i) => prev + current, 0) / SAMPLE_SIZE;
-              var stddev = calculateCoefficientOfVariation(finalSample.map(v => v.values.loadTime), mean);
-              writeReport(
-                  `LOAD TIMES FOR ${speed} ON ${config.server.toUpperCase()}`,
-                  finalSample.map(v => v.values.loadTime),
-                  `MEAN ${mean} ± ${stddev}%`
-                  );
-              done();
-            } else {
-              loadPage();
-            }
-          }));
-        }
-        loadPage();
+        runner.sample({
+          execute: () => {
+            browser.get(`http://localhost:${config.portPrefix}${i}/${config.path}`);
+            browser.wait($('.new-question'));
+          }
+        });
+
+        // function loadPage() {
+        //   var startTime = process.hrtime();
+        //   browser.get(`http://localhost:${config.portPrefix}${i}/${config.path}`);
+        //   browser.wait($('.new-question').getText().then(() => {
+        //     var totalTime = process.hrtime(startTime);
+        //     samples.push({
+        //       values: {
+        //         loadTime: parseFloat(totalTime.join('.'))
+        //       }
+        //     });
+        //     if (finalSample = validator.validate(samples)) {
+        //       var mean = finalSample
+        //             .map(v => v.values.loadTime)
+        //             .reduce((prev, current, i) => prev + current, 0) / SAMPLE_SIZE;
+        //       var stddev = calculateCoefficientOfVariation(finalSample.map(v => v.values.loadTime), mean);
+        //       writeReport(
+        //           `LOAD TIMES FOR ${speed} ON ${config.server.toUpperCase()}`,
+        //           finalSample.map(v => v.values.loadTime),
+        //           `MEAN ${mean} ± ${stddev}%`
+        //           );
+        //       done();
+        //     } else {
+        //       loadPage();
+        //     }
+        //   }));
+        // }
+        // loadPage();
       }, JASMINE_TIMEOUT);
     });
   });

@@ -9,4 +9,6 @@ bootstrap(App, [
 	ROUTER_PROVIDERS,
   SHARED_PROVIDERS,
   provide(LocationStrategy, {useClass: PathLocationStrategy})
-]);
+]).then(() => {
+  (<any>window).loadTime = Date.now() - performance.timing.navigationStart
+});
