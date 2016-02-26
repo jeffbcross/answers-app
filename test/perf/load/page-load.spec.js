@@ -41,7 +41,7 @@ describe('home page load', function() {
         runner.sample({
           execute: () => {
             browser.get(`http://localhost:${config.portPrefix}${i}/${config.path}`);
-            browser.wait($('.new-question'));
+            // browser.wait($('.new-question'));
           }
         });
 
