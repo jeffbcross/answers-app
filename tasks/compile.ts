@@ -28,6 +28,17 @@ export const compile = (gulp, config) => {
 			})
 	});
 
+
+  gulp.task('depcache', ['compile:vendor'], () => {
+
+		let builder = new Builder();
+
+		return builder.loadConfig(config.system.configFile)
+		  .then(() => {
+				return builder.trace('app').then((trace) => {console.log(builder.getDepCache(trace))})
+			})
+	});
+
 	gulp.task('compile:vendor', [], () => {
 
 		let builder = new Builder();

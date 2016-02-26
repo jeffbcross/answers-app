@@ -10,7 +10,7 @@ import {APP_BASE_HREF, ROUTER_PROVIDERS} from 'angular2/router';
 import {SHARED_PROVIDERS} from './shared-providers';
 
 // Angular 2
-import {App} from './app/app';
+import {App} from './components/app';
 
 let app = express();
 let root = path.join(path.resolve(__dirname, '..'));
